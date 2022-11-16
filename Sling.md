@@ -161,3 +161,27 @@ These correspond to `sinter_type_t` in Sinter.
 | String    | 6          | `str`                                                        |
 | Array     | 7          | `str` Device implementation-defined stringification of array |
 | Function  | 8          | None                                                         |
+
+### `monitor` (Device &rarr; Client)
+
+`monitor` sends device system information to the client. A `monitor` message has only two types: "flush" and "non-flush" (there is no self-flushing type).
+
+#### Payload
+
+For a "flush"-type message:
+
+| Name                    | Type            |
+| ----------------------- | --------------- |
+| Is flush                | `u8` set to `1` |
+| Starting message number | `u32`           |
+
+For a "non-flush"-type message:
+
+| Name         | Type            |
+| ------------ | --------------- |
+| Is flush     | `u8` set to `0` |
+| Message data | `str`           |
+
+A device should be able to send as many `monitor` messages before a flush, each of them indicating a specific metric for the **same item** (e.g. the same sensor, motor, or peripheral connected to the device, or the device itself). After a flush, the device is free to send more `monitor` messages for any other (or same) item. The metrics are up to the device-client implementation.
+
+**Note that this is hardcoded as exactly 4 metrics per peripheral at the moment, and only EV3 sensors and motors are supported (as only the EV3 is officially supported for now), but the protocol itself is made to be flexible so this can be changed with refactoring.**
